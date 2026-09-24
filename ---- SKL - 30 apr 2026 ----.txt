@@ -1,0 +1,71 @@
+---- SKL - 30 apr 2026 ----
+
+
+menu review ocr
+Ketika btn review di klik pada menu dashboard, maka otomatis ke btn review ocr, dimana btn dashboard sebelah kiri auto close dan review pdf itu lebih lebar dan Panjang. lalu menu div antrian ada di Bawah header review ocr
+jadi div dokumen asl dan div hasil review yg bisa edit ada di tengah2. proposi nya, Ketika btn dashboard di open, maka div review doc asli dan div hasil review edit 50:50
+tapi kalo btn dashboard di close, maka div review doc asli dan div hasil review edit jadi 75:25
+
+div review pdf ini secara div menu posisinya sama tapi dia bisa scroll down hasil pdf. pada saat klik approve, ubah status dan ubah update date, ingest date jangan diubah
+
+
+
+menu ready to sap b1
+itu hanya tampilin data2 yg statusnya approved dan 'failed sent to sap b1'
+dan akan ada btn untuk trigger workflow n8n agar bisa kirim ke sap b1. jadi tambah kolom status
+
+
+nanti kalo udah dikirim ke sap b1
+maka table di menu review to sap b1 kosong lalu status nya diubah menjadi 'successfully sent to sap b1' / 'failed sent to sap b1' tergantung hasil dari wokflow lica,
+ini di workflow lica, lica yg atur
+
+pada saat klik btn send to sap b1, ubah status dan update date
+
+kolom Riwayat, ada tgl, ini tgl terakhir di update
+
+
+
+
+
+table
+------------
+
+1. table dashboard - header
+
+id doc, tipe, vendor / cust, nilai, status, ingest date (tanggal upload), update date
+
+
+
+2. table review ocr - detail
+
+id doc, base64_pdf, akurasi (confidence), nama perusahaan, tipe, tanggal (yg ada di dalam pdf, yg udh di scan oleh LICA), customer, alamat, total nilai, no po.ref, tgl kirim
+
+di label review ocr, kan ada pt sumber jaya, nah ini ambil dari data kolom customer
+
+dan ini bisa di edit
+
+kalo udh klik btn approve, maka di table header, dari menunggu review -> approved
+
+
+workflow dari yitshak, yg akan menentukan status awal di table header, threshold confidence / akurasi = 95%
+akurasi >= 95 ---> status = 'menunggu review'
+akurasi < 95 ---> status = 'antrian manual' dan Ketika di menu review ocr, div card edit, menjadi merah, dan low nya juga merah. baru Ketika udah di edit dan ada btn tambahan yaitu 'yakin?' dan Ketika mereka pilih yakin, maka warna merah nya lama lama jadi putih, karena ada banyak kolom yg harus mereka edit
+contoh ada 10 kolom low semua => card edit bg warna merah bgt
+lalu di edit, jadi misal 9 kolom low dan 1 kolom edited full yakin maka => card edit bg warna merah aja
+dan seterusnya sampe 0 kolom low dan 10 kolom edited full yakin maka => card edit bg warna putih
+
+
+
+
+
+
+
+3. table upload dokumen
+id, nama doc, status done kelar review
+
+jadi pada saat upload docs, dikirim data ke table upload dokumen, nah diisinya adalah id (incremental dari 1 - jumlah doc) , nama doc dan status itu di null kan
+lalu ada animasi jumlah doc, kayak 0/4 done or something untuk nunjukin udh berapa banyak data yg di proses (freeze memnu upload dokumen tapi dashboard menu utama tetep bisa di klik, termasuk profile)
+nanti ishak yg isi statusnya dari workflow dan website cek, ada brp jumlah yg udh done, lalu kalo semua table tsb udh done, maka unfreeze menu tsb
+
+
+
