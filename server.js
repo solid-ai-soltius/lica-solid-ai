@@ -19,17 +19,19 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Serve index.html di root — buka http://localhost:3001
-app.use(express.static(path.join(__dirname)));
+// Serve frontend HANYA dari folder public/ (jangan expose root repo)
+app.use(express.static(path.join(__dirname, 'public')));
 
 // ── DB CONNECTION (Railway PostgreSQL) ─────────────────────
+// Kredensial dari env var (set di Railway > Variables, atau file .env di local)
+if (!process.env.DATABASE_URL) {
+  console.error('❌ DATABASE_URL belum di-set');
+  process.exit(1);
+}
+const useSSL = !process.env.DATABASE_URL.includes('.railway.internal');
 const pool = new Pool({
-  host:     'zephyr.proxy.rlwy.net',
-  port:      55200,
-  database: 'railway',
-  user:     'postgres',
-  password: 'kd1I_D5f044ubaNB6v2L!!GKwjEW4fQc',
-  ssl:      { rejectUnauthorized: false },
+  connectionString: process.env.DATABASE_URL,
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
 });
 
 // Test koneksi saat startup
@@ -902,7 +904,7 @@ app.get('/api/upload/batch/:id', requireAuth, async (req, res) => {
 // ════════════════════════════════════════════════════════════
 //  START SERVER
 // ════════════════════════════════════════════════════════════
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 LICA API running at http://localhost:${PORT}`);
-  console.log(`   DB: zephyr.proxy.rlwy.net:55200 → railway/istana_surya`);
+  console.log(`   DB: ${useSSL ? "public proxy" : "private network"}`);
 });
