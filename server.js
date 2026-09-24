@@ -14,6 +14,7 @@ const path    = require('path');
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
+const SESSION_HOURS = String(process.env.SESSION_HOURS || 12); // lama sesi login (jam)
 
 // ── MIDDLEWARE ──────────────────────────────────────────────
 app.use(cors());
@@ -69,6 +70,13 @@ async function requireAuth(req, res, next) {
     );
     if (!result.rows.length) return res.status(401).json({ error: 'Invalid/expired token' });
     req.user = result.rows[0];
+
+    // Sliding session: tiap request valid, perpanjang masa berlaku token
+    q(`UPDATE istana_surya.user_sessions
+         SET expires_at = NOW() + ($2 || ' hours')::INTERVAL
+       WHERE token = $1`, [token, SESSION_HOURS])
+      .catch(err => console.error('Session refresh failed:', err.message));
+
     next();
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -105,9 +113,9 @@ app.post('/api/auth/login', async (req, res) => {
     // Buat token
     const token = crypto.randomBytes(32).toString('hex');
     await q(
-      `INSERT INTO istana_surya.user_sessions(user_id, token, ip_address)
-       VALUES ($1, $2, $3)`,
-      [user.id, token, req.ip]
+      `INSERT INTO istana_surya.user_sessions(user_id, token, ip_address, expires_at)
+       VALUES ($1, $2, $3, NOW() + ($4 || ' hours')::INTERVAL)`,
+      [user.id, token, req.ip, SESSION_HOURS]
     );
     await q(`UPDATE istana_surya.users SET last_login_at = NOW() WHERE id = $1`, [user.id]);
 
