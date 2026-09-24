@@ -19,8 +19,8 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// Serve frontend HANYA dari folder public/ (jangan expose root repo)
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve index.html di root — HANYA file ini, file lain di repo tidak ter-expose
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'index.html')));
 
 // ── DB CONNECTION (Railway PostgreSQL) ─────────────────────
 // Kredensial dari env var (set di Railway > Variables, atau file .env di local)
